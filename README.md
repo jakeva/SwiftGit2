@@ -7,19 +7,26 @@
 Swift bindings to [libgit2](https://github.com/libgit2/libgit2).
 
 ```swift
-let URL: NSURL = ...
-let repo = Repository.at(URL)
-if let repo = repo.value {
-    let latestCommit: Result<Commit, NSError> = repo
+let URL: URL = ...
+let result = Repository.at(URL)
+switch result {
+case let .success(repo):
+    let latestCommit = repo
         .HEAD()
-        .flatMap { repo.commit($0.oid) }
-    if let commit = latestCommit.value {
+        .flatMap {
+            repo.commit($0.oid)
+        }
+
+    switch latestCommit {
+    case let .success(commit):
         print("Latest Commit: \(commit.message) by \(commit.author.name)")
-    } else {
-        print("Could not get commit: \(latestCommit.error)")
+
+    case let .failure(error):
+        print("Could not get commit: \(error)")
     }
-} else {
-    println("Could not open repository: \(repo.error)")
+
+case let .failure(error):
+    print("Could not open repository: \(error)")
 }
 ```
 
@@ -43,6 +50,10 @@ To build SwiftGit2, you'll need the following tools installed locally:
 * autoconf
 * automake
 * pkg-config
+
+```
+brew install cmake libssh2 libtool autoconf automake pkg-config
+```
 
 ## Adding SwiftGit2 to your Project
 The easiest way to add SwiftGit2 to your project is to use [Carthage](https://github.com/Carthage/Carthage). Simply add `github "SwiftGit2/SwiftGit2"` to your `Cartfile` and run `carthage update`.
